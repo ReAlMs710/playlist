@@ -3,10 +3,10 @@
 #include <vector>
 #include <filesystem>
 #include <cstring> // getenv()
+#include <algorithm> // For shuffle
+#include <random> // For random device
 
 using namespace std;
-
-
 
 void clearScreen() {
     cout << "\033[2J\033[H"; // ANSI escape code to clear screen
@@ -29,6 +29,25 @@ void installMpg() {
     }
 }
 
+void playSongsInOrder(const vector<string>& mp3Files) {
+    for (const auto& file : mp3Files) {
+        clearScreen();
+        cout << "Now playing: " << filesystem::path(file).filename().string() << "\n\n";
+        string command = "mpg123 -q --no-control --audiodevice pulse \"" + file + "\"";
+        int result = system(command.c_str());
+        if (result != 0) {
+            cerr << "Error playing the file: " << file << "\n";
+        }
+    }
+}
+
+void playSongsRandomly(vector<string> mp3Files) {
+    random_device rd;
+    mt19937 g(rd());
+    shuffle(mp3Files.begin(), mp3Files.end(), g);
+
+    playSongsInOrder(mp3Files);
+}
 
 void menu(const vector<string>& mp3Files) {
     while (true) {
@@ -36,8 +55,10 @@ void menu(const vector<string>& mp3Files) {
         system("clear");
         cout << "\nThe Best MP3 Player:\n";
         cout << "1. Select an MP3 to play\n";
-        cout << "2. Open mpg123 menu\n";
-        cout << "3. Exit\n";
+        cout << "2. Play all songs in order\n";
+        cout << "3. Play all songs randomly\n";
+        cout << "4. Open mpg123 menu\n";
+        cout << "5. Exit\n";
         cout << "Enter your choice: ";
         int choice;
         cin >> choice;
@@ -71,12 +92,16 @@ void menu(const vector<string>& mp3Files) {
                 cin.get();
             }
         } else if (choice == 2) {
+            playSongsInOrder(mp3Files);
+        } else if (choice == 3) {
+            playSongsRandomly(mp3Files);
+        } else if (choice == 4) {
             system("clear");
             system("mpg123 -?");
             cout << "\nPress Enter to continue...";
             cin.ignore();
             cin.get();
-        } else if (choice == 3) {
+        } else if (choice == 5) {
             cout << "Exiting...\n";
             break;
         } else {
@@ -119,4 +144,3 @@ int main() {
     menu(mp3Files);
     return 0;
 }
-
