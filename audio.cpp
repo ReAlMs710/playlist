@@ -53,7 +53,7 @@ void menu(const vector<string>& mp3Files) {
     while (true) {
         string buffer;
         system("clear");
-        cout << "\nThe Best MP3 Player:\n";
+        cout << "The Best MP3 Player:\n";
         cout << "1. Select an MP3 to play\n";
         cout << "2. Play all songs in order\n";
         cout << "3. Play all songs randomly\n";
