@@ -33,7 +33,7 @@ void playSongsInOrder(const vector<string>& mp3Files) {
     for (const auto& file : mp3Files) {
         clearScreen();
         cout << "Now playing: " << filesystem::path(file).filename().string() << "\n\n";
-        string command = "mpg123 -q --no-control --audiodevice pulse \"" + file + "\"";
+        string command = "mpg123 -q --no-control \"" + file + "\"";
         int result = system(command.c_str());
         if (result != 0) {
             cerr << "Error playing the file: " << file << "\n";
