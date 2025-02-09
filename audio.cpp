@@ -7,6 +7,7 @@
 #include <random> // For random device
 
 using namespace std;
+void menuLogic(const vector<string>& mp3Files, int choice);
 
 void clearScreen() {
     cout << "\033[2J\033[H"; // ANSI escape code to clear screen
@@ -14,6 +15,23 @@ void clearScreen() {
 
 bool mpgInstallCheck() {
     return system("command -v mpg123 > /dev/null 2>&1") == 0;
+}
+
+bool tmuxInstallCheck() {
+    return system("command -v tmux > /dev/null 2>&1") == 0;
+}
+
+void installTmux() {
+    char response;
+    cout << "tmux is not installed. Would you like to install it now? (y/n): ";
+    cin >> response;
+
+    if (response == 'y' || response == 'Y') {
+        system("sudo pacman -S tmux");
+    } else {
+        cerr << "mpg123 is required for playing MP3 Files.";
+        exit(1);
+    }
 }
 
 void installMpg() {
@@ -62,7 +80,11 @@ void menu(const vector<string>& mp3Files) {
         cout << "Enter your choice: ";
         int choice;
         cin >> choice;
+        menuLogic(mp3Files, choice);
+    }
+}
 
+void menuLogic(const vector<string>& mp3Files, int choice) {
         if (choice == 1) {
             system("clear");
             cout << "Your Music\n";
@@ -70,9 +92,13 @@ void menu(const vector<string>& mp3Files) {
                 filesystem::path p(mp3Files[i]);
                 cout << i + 1 << ". " << p.filename().string() << "\n";
             }
-            cout << "Enter the number of the MP3 file to play: ";
+            cout << "Enter the number of the MP3 file to play (type 0 to go back): ";
             int fileChoice;
             cin >> fileChoice;
+
+            if (fileChoice == 0) {
+                return;
+            } 
 
             if (fileChoice < 1 || fileChoice > static_cast<int>(mp3Files.size())) {
                 cerr << "Invalid choice. Try again.\n";
@@ -81,15 +107,21 @@ void menu(const vector<string>& mp3Files) {
             } else {
                 system("clear");
                 filesystem::path p(mp3Files[fileChoice - 1]);
-                cout << "Now playing: " << p.filename().string() << "\n\n";
-                string command = "mpg123 -q --no-control \"" + mp3Files[fileChoice - 1] + "\"";
+                int exit;
+                cout << "Now playing: " << p.filename().string() << ". Type 0 to exit\n\n";
+                string command = "mpg123 -q --no-control \"" + mp3Files[fileChoice - 1] + "\" &";
                 int result = system(command.c_str());
-                
                 if (result != 0) {
                     cerr << "Error playing the file.\n";
                 }
-                cin.ignore();
-                cin.get();
+                cin >> exit;
+                if (exit == 0) {
+                    system("pkill -SIGTERM mpg123");
+                    return;
+                }
+                else {
+                    cout << "Invalid Option";
+                }
             }
         } else if (choice == 2) {
             playSongsInOrder(mp3Files);
@@ -103,12 +135,11 @@ void menu(const vector<string>& mp3Files) {
             cin.get();
         } else if (choice == 5) {
             cout << "Exiting...\n";
-            break;
+            exit(0);
         } else {
             cout << "Invalid option. Try again.\n";
             cin.ignore();
             cin.get();
-        }
     }
 }
 
@@ -141,6 +172,6 @@ int main() {
         return 0;
     }
 
-    menu(mp3Files);
+    menu(mp3Files); 
     return 0;
 }
