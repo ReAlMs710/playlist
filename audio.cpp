@@ -50,28 +50,57 @@ void installMpg() {
 }
 
 void playSongsInOrder(const vector<string>& mp3Files) {
-    int exit;
+    int option;
     for (const auto& file : mp3Files) {
         clearScreen();
-        cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\n";
+        cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\nType 2 to change volume\n\n";
         string command = "mpg123 -q --no-control \"" + file + "\" &";
         int result = system(command.c_str());
         if (result != 0) {
             cerr << "Error playing the file: " << file << "\n";
         }
         while (true) {
-            cin >> exit;
-            if (exit == 0) {
+            cin >> option;
+            if (option == 0) {
                 system("pkill -SIGTERM mpg123");
                 return;
             }
-            else if (exit == 1) {
+            else if (option == 1) {
                 system("pkill -SIGTERM mpg123");
                 break;
             }
+            else if (option == 2) {
+                clearScreen();
+                int vol;
+                cout << "Type 0 to go back\nType 1 to increase volume by 5%\nType 2 to decrease volume by 5%\n\n";
+               
+                while (true) {
+                    cin >> vol;
+                    if (vol == 1) {
+                        clearScreen();
+                        system("amixer -D pulse sset Master 5%+ > /dev/null 2>&1");
+                        cout << "Type 0 to go back\nType 1 to increase volume by 5%\nType 2 to decrease volume by 5%\n\n";
+                        cout << "Volume increased by 5%\n\n";
+                    }
+                    else if (vol == 2) {
+                        clearScreen();
+                        system("amixer -D pulse sset Master 5%- > /dev/null 2>&1");
+                        cout << "Type 0 to go back\nType 1 to increase volume by 5%\nType 2 to decrease volume by 5%\n\n";
+                        cout << "Volume decreased by 5%\n\n";
+                    }
+                    else if (vol == 0) {
+                        clearScreen();
+                        cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\nType 2 to change volume\n\n";
+                        break;
+
+                    }
+
+                } 
+                
+            }
             else {
                 clearScreen();
-                cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\n";
+                cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\nType 2 to change volume\n\n";
                 cout << "\nInvalid Choice\n";
             }
         }
@@ -92,9 +121,9 @@ void menu(const vector<string>& mp3Files) {
         system("clear");
         cout << "The Best MP3 Player:\n";
         cout << "1. Select an MP3 to play\n";
-        cout << "2. Play all songs in order\n";
-        cout << "3. Play all songs randomly\n";
-        cout << "4. Open mpg123 menu\n";
+        cout << "2. Play ALL songs in order\n";
+        cout << "3. Shuffle ALL songs\n";
+        cout << "4. Open mpg123 command menu\n";
         cout << "5. Exit\n";
         cout << "Enter your choice: ";
         int choice;
