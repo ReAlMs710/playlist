@@ -22,6 +22,7 @@ bool tmuxInstallCheck() {
 }
 
 void installTmux() {
+    clearScreen();
     char response;
     cout << "tmux is not installed. Would you like to install it now? (y/n): ";
     cin >> response;
@@ -35,6 +36,7 @@ void installTmux() {
 }
 
 void installMpg() {
+    clearScreen();
     char response;
     cout << "mpg123 is not installed. Would you like to install it now? (y/n): ";
     cin >> response;
@@ -48,13 +50,30 @@ void installMpg() {
 }
 
 void playSongsInOrder(const vector<string>& mp3Files) {
+    int exit;
     for (const auto& file : mp3Files) {
         clearScreen();
-        cout << "Now playing: " << filesystem::path(file).filename().string() << "\n\n";
-        string command = "mpg123 -q --no-control \"" + file + "\"";
+        cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\n";
+        string command = "mpg123 -q --no-control \"" + file + "\" &";
         int result = system(command.c_str());
         if (result != 0) {
             cerr << "Error playing the file: " << file << "\n";
+        }
+        while (true) {
+            cin >> exit;
+            if (exit == 0) {
+                system("pkill -SIGTERM mpg123");
+                return;
+            }
+            else if (exit == 1) {
+                system("pkill -SIGTERM mpg123");
+                break;
+            }
+            else {
+                clearScreen();
+                cout << "Now playing: " << filesystem::path(file).filename().string() << ". \n\nType 0 to exit\nType 1 to skip\n";
+                cout << "\nInvalid Choice\n";
+            }
         }
     }
 }
@@ -120,7 +139,7 @@ void menuLogic(const vector<string>& mp3Files, int choice) {
                     return;
                 }
                 else {
-                    cout << "Invalid Option";
+                    cout << "Invalid Option\n";
                 }
             }
         } else if (choice == 2) {
@@ -137,9 +156,7 @@ void menuLogic(const vector<string>& mp3Files, int choice) {
             cout << "Exiting...\n";
             exit(0);
         } else {
-            cout << "Invalid option. Try again.\n";
-            cin.ignore();
-            cin.get();
+            return;
     }
 }
 
@@ -147,6 +164,10 @@ int main() {
     if (!mpgInstallCheck()) {  // Fixed logic here
         installMpg();
     }
+
+    if (!tmuxInstallCheck()) {
+        installTmux();
+    } 
 
     const char* homeDir = getenv("HOME");
     if (!homeDir) {
